@@ -1,46 +1,44 @@
-name: Build Dyad Pro (unlocked)
+name: Build Dyad for Windows
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+    inputs:
+      tag:
+        description: "Release tag, example: v1.0.0"
+        required: true
+        default: "v1.0.0"
+
+permissions:
+  contents: write
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [
-            { name: windows, image: windows-latest },
-          ]
-    runs-on: ${{ matrix.os.image }}
+    runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: package.json
+          node-version: 24
 
-      - name: Install npm 11
-        run: npm install -g npm@11.8.0
+      - run: npm install
 
-      - run: npm ci
+      - run: npm run make
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build (make)
-        run: npm run make
-        env:
-          # Skip code signing – not needed for local builds
-          WINDOWS_SIGN: "false"
           E2E_TEST_BUILD: "true"
-          NODE_OPTIONS: "--max-old-space-size=4096"
-          DEBUG: "@electron*,electron-forge*"
 
-      - name: Upload artifacts
+      - name: Upload artifact to workflow
         uses: actions/upload-artifact@v4
         with:
-          name: dyad-pro-${{ matrix.os.name }}
-          path: out/make/
-          retention-days: 14
+          name: dyad-windows-installer
+          path: out/make/**/*.exe
+
+      - name: Create GitHub Release and upload EXE
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          name: Dyad Windows ${{ github.event.inputs.tag }}
+          files: out/make/**/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
