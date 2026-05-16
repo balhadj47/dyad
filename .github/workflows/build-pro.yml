@@ -1,0 +1,48 @@
+name: Build Dyad Pro (unlocked)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [
+            { name: windows, image: windows-latest },
+            { name: linux, image: ubuntu-22.04 },
+            { name: macos, image: macos-latest },
+          ]
+    runs-on: ${{ matrix.os.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+
+      - name: Install npm 11
+        run: npm install -g npm@11.8.0
+
+      - run: npm ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build (make)
+        run: npm run make
+        env:
+          # Skip code signing – not needed for local builds
+          WINDOWS_SIGN: "false"
+          E2E_TEST_BUILD: "true"
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          DEBUG: "@electron*,electron-forge*"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dyad-pro-${{ matrix.os.name }}
+          path: out/make/
+          retention-days: 14
