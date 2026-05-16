@@ -22,11 +22,12 @@ jobs:
         with:
           node-version: 24
 
-      - run: npm install
+      - run: npm ci
 
       - run: npm run make
         env:
           E2E_TEST_BUILD: "true"
+          WINDOWS_SIGN: "false"
 
       - name: Upload artifact to workflow
         uses: actions/upload-artifact@v4
