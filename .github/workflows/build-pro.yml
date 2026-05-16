@@ -13,8 +13,6 @@ jobs:
       matrix:
         os: [
             { name: windows, image: windows-latest },
-            { name: linux, image: ubuntu-22.04 },
-            { name: macos, image: macos-latest },
           ]
     runs-on: ${{ matrix.os.image }}
     steps:
