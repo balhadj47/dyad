@@ -49,7 +49,7 @@ const DEFAULT_SETTINGS: UserSettings = {
   selectedThemeId: DEFAULT_THEME_ID,
   isRunning: false,
   lastKnownPerformance: undefined,
-  // Enabled by default in 0.33.0-beta.1
+  enableDyadPro: true
   enableNativeGit: true,
   autoExpandPreviewPanel: true,
   enableContextCompaction: true,
